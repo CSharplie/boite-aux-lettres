@@ -151,6 +151,28 @@
                         label_name.css("fontSize", `${new_size}px`)
                     })
 
+                    
+                    $(table).find(".act-edit").click((item) => {
+                        label_number = $(item.target).parents(".row-label").find(".label-number")
+                        label_name = $(item.target).parents(".row-label").find(".label-name")
+
+                        $(".form-number-edit").val(label_number.text())
+                        $(".form-names-edit").val(label_name.html().replace("<br/>", "\n"))
+
+
+                        $("#btn-edit").off()
+
+                        $("#btn-edit").click(() => {
+                            label_number.text($(".form-number-edit").val())
+                            label_name.html($(".form-names-edit").val().replace("\n", "<br/>"))
+                            $("#modal-edit").modal("hide");
+                        })
+
+                        $("#modal-edit").modal("show");
+                    })
+
+                   
+
                     if(add_link_to_add) {
                         link = $("<a class='to-hide' href='#'>Ajouter une nouvelle étiquette en dessous</a>")
                         link.click(() => {
@@ -276,6 +298,26 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="modal-edit" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5">Modifier une étiquette</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="text" class="form-control form-number-edit" placeholder="Numéro d'appartement">
+                        <br/>
+                        <textarea class="form-control form-names-edit" rows="3" placeholder="Noms"></textarea>
+                        <br/>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="button" class="btn btn-primary" id="btn-edit">Modifier</button>
                     </div>
                 </div>
             </div>
