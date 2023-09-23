@@ -3,10 +3,16 @@
         <title>Générateur étiquettes</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <style>
+            @media print {
+                .to-hide { 
+                    display: none;
+                }
+            }
+
             .label-table {
-                margin-left:auto;
                 margin-right:auto;
                 border: 1px solid black;
                 font-family: Calibri;
@@ -26,6 +32,8 @@
         <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
         <script>
+            add_link_to_add = true
+
             configuration = {
                 pixel_ratio: 37.8,
                 stadium: {
@@ -53,6 +61,8 @@
             }
 
             $(document).ready(() => {
+                $("#modal-help").modal("show");
+
                 $("#btn-open-model").click(() => {
                     $(".form-name").val("")
                     $(".form-number").val("")
@@ -74,6 +84,9 @@
                     number = $(".form-number").val().toUpperCase()
                     names = names.join(" / ")
 
+                    total_height = current_configuration.name_height + current_configuration.stop_height
+                    total_width = current_configuration.number_width + current_configuration.name_width
+
                     sizes = {
                         number_width: current_configuration.number_width * configuration.pixel_ratio,
                         name_width: current_configuration.name_width * configuration.pixel_ratio,
@@ -82,26 +95,81 @@
                     }
 
                     table = $(`
-                    <table class='label-table'>
-                        <tr style='height:${sizes.name_height}px'>
-                            <td class='label-table label-number' style='width:${sizes.number_width}px;font-size:${current_configuration.number_font_size}pt'>${number}</td>
-                            <td class='label-table label-name' style='width:${sizes.name_width}px;font-size:${current_configuration.name_font_size}pt'>${names}</td>
-                        </tr>
-                        <tr ${ add_stop_message ? "" : "hidden" } style='background:${current_configuration.stop_background};color:${current_configuration.stop_foreground};'>
-                            <td colspan='2' class='label-stop label-table' style='width:100%;height:${sizes.stop_height}px'>Pas de publicité, merci</td>
-                        </tr>
-                    </table>
-                    <br/>
+
+                    <div class='row row-label'>
+                        <div class='col-2 to-hide'>
+                            <br/ >
+                            <table style='margin-left:auto;'>
+                                <tr style='height:${total_height * configuration.pixel_ratio}px'>
+                                    <td>
+                                        <button style="margin:2px;" type="button" class="btn btn-outline-primary act-sizedown"><i class="bi bi-arrows-angle-contract"></i></button>
+                                        <button style="margin:2px;" type="button" class="btn btn-outline-primary act-sizeup"><i class="bi bi-arrows-angle-expand"></i></button>
+                                        <br/>
+                                        <button style="margin:2px;" type="button" class="btn btn-outline-primary act-edit"><i class="bi bi-pencil"></i></button>
+                                        <button style="margin:2px;" type="button" class="btn btn-outline-danger act-remove"><i class="bi bi-x-circle"></i></button>
+                                    </td>
+                                    <td style='border-right: 1px dashed black;padding:5px;'>${total_height} cm</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class='col-10'>
+                            <br/>
+                            <table class='label-table'>
+                                <tr style='height:${sizes.name_height}px'>
+                                    <td class='label-table label-number' style='width:${sizes.number_width}px;font-size:${current_configuration.number_font_size}pt'>${number}</td>
+                                    <td class='label-table label-name' style='width:${sizes.name_width}px;font-size:${current_configuration.name_font_size}pt'>${names}</td>
+                                </tr>
+                                <tr ${ add_stop_message ? "" : "hidden" } style='background:${current_configuration.stop_background};color:${current_configuration.stop_foreground};'>
+                                    <td colspan='2' class='label-stop label-table' style='width:100%;height:${sizes.stop_height}px'>Pas de publicité, merci</td>
+                                </tr>
+                            </table>
+                            <br class='to-hide'/>
+                            <table style='margin-rigth:auto;' class='to-hide'>
+                                <tr>
+                                    <td style='border-top: 1px dashed black;padding:5px;width:${total_width * configuration.pixel_ratio}px;text-align: center;'>${total_width} cm</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
                     `)
 
+                    $(table).find(".act-remove").click((item) => {
+                        $(item.target).parents(".row-label").remove()
+                    })
+
+                    $(table).find(".act-sizedown").click((item) => {
+                        label_name = $(item.target).parents(".row-label").find(".label-name")
+                        current_size = Number(label_name.css("fontSize").replace("px", ""))
+                        new_size = current_size - 1
+                        label_name.css("fontSize", `${new_size}px`)
+                    })
+
+                    $(table).find(".act-sizeup").click((item) => {
+                        label_name = $(item.target).parents(".row-label").find(".label-name")
+                        current_size = Number(label_name.css("fontSize").replace("px", ""))
+                        new_size = current_size + 1
+                        label_name.css("fontSize", `${new_size}px`)
+                    })
+
+                    if(add_link_to_add) {
+                        link = $("<a class='to-hide' href='#'>Ajouter une nouvelle étiquette en dessous</a>")
+                        link.click(() => {
+                            $("#btn-open-model").click()
+                        })
+                        $(".print-zone").append(link)
+                        add_link_to_add = false
+                    }
+
+                    $(".print-zone").append("<br class='to-hide'>")
                     $(".print-zone").append(table)
+
                     $("#modal-new").modal("hide");
                 })
             })
         </script>
     </head>
     <body>
-        <nav class="navbar bg-body-tertiary">
+        <nav class="navbar bg-body-tertiary to-hide">
             <div class="container-fluid">
                 <a class="navbar-brand">Générateur d'étiquettes</a>
                 <form class="d-flex" role="search">
@@ -113,12 +181,7 @@
                 </form>
             </div>
         </nav>
-        <div class="container text-center">
-            <div class="row">
-                <div class="col print-zone">
-                    <br/>
-                </div>
-            </div>
+        <div class="container text-center print-zone">
         </div>
         <div class="modal fade" id="modal-new" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
@@ -146,6 +209,73 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                         <button type="button" class="btn btn-primary" id="btn-add">Ajouter</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="modal-help" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5">Aide</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Bienvenue dans l'outil de génération d'étiquette de boites aux lettres. Vous trouverez ci-dessous l'aide pour vous aider à crée vos étiquettes.</p>
+                        <div class="accordion" id="accordion-help">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-new" aria-expanded="true" aria-controls="collapse-new">
+                                        Créer une ou plusieurs étiquettes
+                                    </button>
+                                </h2>
+                                <div id="collapse-new" class="accordion-collapse collapse show" data-bs-parent="#accordion-help">
+                                    <div class="accordion-body">
+                                        <img style="width:100%;" src="img/add_new_label.gif"/>
+                                        <p>Il est possible de créer une ou plusieurs étiquettes de boite aux lettres.</p>
+                                        <li class="list-group-item">Voici les étapes à suivre
+                                            <ol class="list-group list-group-numbered">
+                                                <li class="list-group-item">Choisir la résidence concernée</li>
+                                                <li class="list-group-item">Cliquer sur le bouton "Ajout d'une étiquette"</li>
+                                                <li class="list-group-item">Saisir le numéro d'appartement</li>
+                                                <li class="list-group-item">Saisir chaque noms de famille ou noms de sociétes</li>
+                                                <li class="list-group-item">Choisir si la notion "stop pub" doit être ajoutée</li>
+                                                <li class="list-group-item">Cliquer sur ajouter</li>
+                                            </ol>
+                                        </li>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-print" aria-expanded="false" aria-controls="collapse-print">
+                                        Imprimer les étiquettes
+                                    </button>
+                                </h2>
+                                <div id="collapse-print" class="accordion-collapse collapse" data-bs-parent="#accordion-help">
+                                    <div class="accordion-body">
+                                        <img style="width:100%;" src="img/print.gif"/>
+                                        <p>Il est possible d'imprimer les étiquettes directement depuis l'outil.</p>
+                                        <li class="list-group-item">Voici les étapes à suivre
+                                            <ol class="list-group list-group-numbered">
+                                                <li class="list-group-item">Presser les touches ctrl+P</li>
+                                                <li class="list-group-item"><strong>Si la couleur apparait pas sur la prévisualisation</strong></li>
+                                                <li class="list-group-item">Choisr l'imprimante</li>
+                                                <li class="list-group-item">Cliquer sur "imprimer"</li>
+                                                <li class="list-group-item"><strong>Si la couleur n'apparaitpas  pas sur la prévisualisation</strong></li>
+                                                <li class="list-group-item">Cliquer sur "plus de paramètres"</li>
+                                                <li class="list-group-item">Descedre jusqu'à "Élément graphique de fond" et le cocher</li>
+                                                <li class="list-group-item">Choisr l'imprimante</li>
+                                                <li class="list-group-item">Cliquer sur "imprimer"</li>
+                                            </ol>
+                                        </li>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
                     </div>
                 </div>
             </div>
